@@ -1,9 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 '''
-S: j = 0, 1, 2, ... , N
-t: k = 0, 1, 2, ... , M
+S: j = 1, 2, ... , N + 1
+t: k = 1, 2, ... , M + 1
 '''
 
 '''
@@ -13,10 +12,10 @@ titta på indexering
 def payoff_function(S, K):
     return [max(value - K, 0) for value in S]
 
-def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 1000, M = 1000):
+def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 3, M = 3):
     s_max = 4*K
-    delta_t = T/M
-    delta_s = s_max/N
+    delta_t = T/N
+    delta_s = s_max/M
     grid = np.zeros((M + 1, N + 1))
     S = np.linspace(0, s_max, N + 1)
     end_vals = (payoff_function(S, K))
@@ -27,27 +26,27 @@ def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 1000, M = 1000):
     grid[:, -1] = list(reversed([s_max - K*np.exp(-r*(T - delta_t*(n))) for n in range(M + 1)]))
     
     
-    for k in range(0, M):
+    for k in range(1, M + 1):
         A = np.zeros((N-1, N-1))
         
         #diagonal
-        for j in range(1, N):
-            alpha = ((sigma**2)*(S[j]**2)*delta_t)/(2*(delta_s**2))
-            beta = r*S[j]*delta_t/(2*delta_s)
+        for j in range(2, N + 1):
+            alpha = ((sigma**2)*(S[j - 1]**2)*delta_t)/(2*(delta_s**2))
+            beta = r*S[j - 1]*delta_t/(2*delta_s)
             d = 1 + r*delta_t + 2*alpha
-            A[j-1, j-1] = d
+            A[j-2, j-2] = d
         #lowerdiagonal
-        for j in range(2, N):
-            alpha = ((sigma**2)*(S[j]**2)*delta_t)/(2*(delta_s**2))
-            beta = r*S[j]*delta_t/(2*delta_s)
+        for j in range(3, N + 1):
+            alpha = ((sigma**2)*(S[j - 1]**2)*delta_t)/(2*(delta_s**2))
+            beta = r*S[j - 1]*delta_t/(2*delta_s)
             l = - alpha + beta
-            A[j-1, j-2] = l
+            A[j-2, j-3] = l
         #upperdiagonal
-        for j in range(1, N - 1):
-            alpha = ((sigma**2)*(S[j]**2)*delta_t)/(2*(delta_s**2))
-            beta = r*S[j]*delta_t/(2*delta_s)
-            u = - alpha - beta  
-            A[j-1, j] = u
+        for j in range(2, N):
+            alpha = ((sigma**2)*(S[j - 1]**2)*delta_t)/(2*(delta_s**2))
+            beta = r*S[j - 1]*delta_t/(2*delta_s)
+            u = - alpha - beta
+            A[j-2, j-1] = u
 
         term = np.zeros(N - 1)
         #term[0] = 0
@@ -55,13 +54,12 @@ def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 1000, M = 1000):
         beta = r*S[-2]*delta_t/(2*delta_s)
         u = - alpha - beta
         term[-1] = - u*grid[k + 1, -1]
-        rhs = grid[k, 1:-1] + term
+        rhs = grid[k - 1, 1:-1] + term
         
         next_grid_part = np.linalg.solve(A, rhs)
         grid[k + 1, 1:-1] = next_grid_part
-    print(grid)
         
-    return grid[-1, N//4]
+    print(grid)
 
 def bsexact(sigma: float, R: float, K: float, T: float, s: float):
     from numpy import exp, log, sqrt
@@ -73,9 +71,7 @@ def bsexact(sigma: float, R: float, K: float, T: float, s: float):
     return F
 
 def main():
-    grid = callfunc(K = 15)
-    print(grid)
-    print(bsexact(sigma = 0.25, R = 0.1, K = 15, T = 0.5, s = 15))
+    callfunc(K = 15)
 
 if __name__ == "__main__":
     main()
