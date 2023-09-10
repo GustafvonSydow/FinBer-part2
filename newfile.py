@@ -3,13 +3,13 @@ import numpy as np
 def payoff_function(S, K):
     return [max(value - K, 0) for value in S]
 
-def callfunc(K = 15, r = 0.1, sigma = 0.25, T = 0.5, gamma = 0.8, M = 200, N = 1000):
+
+def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, M = 100, N = 10000):
     s_max = 4*K
     delta_s = s_max/M
     delta_t = T/N
     S = [j*delta_s for j in range(0, M + 1)]
     V = payoff_function(S, K)
-    print(V)
     
     for n in reversed(range(1, N + 1)):
         t_n_minus_1 = (n - 1)*delta_t
@@ -21,9 +21,23 @@ def callfunc(K = 15, r = 0.1, sigma = 0.25, T = 0.5, gamma = 0.8, M = 200, N = 1
             
     return V
 
-def main():
-    V = callfunc()
-    print(V)
+
+def bsexact(sigma: float, R: float, K: float, T: float, s: float):
+    from numpy import exp, log, sqrt
+    from scipy.special import erf
+    
+    d1 = (log(s/K)+(R+0.5*sigma**2)*T)/(sigma*sqrt(T))
+    d2 = d1-sigma*sqrt(T)
+    F = 0.5*s*(1+erf(d1/sqrt(2)))-exp(-R*T)*K*0.5*(1+erf(d2/sqrt(2)))
+    return F
+
+
+def main(K = 15):
+    s = 15
+    V = callfunc(K = K)
+    F = bsexact(sigma = 0.25, R = 0.1, K = K, T = 0.5, s = s)
+    print(V[(s*(len(V)))//(4*K)])
+    print(F)
     
 if __name__ == "__main__":
     main()
