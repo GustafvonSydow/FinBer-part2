@@ -84,8 +84,8 @@ def delta_t_test():
     plt.xlabel('delta t')
     plt.ylabel('error')
     plt.title('Error convergence for delta t')
-    plt.savefig('Error convergence for delta t.jpg')
     plt.legend()
+    plt.savefig('Error convergence for delta t.jpg')
     plt.show()
     
 def delta_s_test():
@@ -105,8 +105,24 @@ def delta_s_test():
     plt.xlabel('delta s')
     plt.ylabel('error')
     plt.title('Error convergence for delta s')
-    plt.savefig('Error convergence for delta s.jpg')
     plt.legend()
+    plt.savefig('Error convergence for delta s.jpg')
+    plt.show()
+
+def gamma_test():
+    gamma_array = np.linspace(0, 1, 11)
+    V_array = np.zeros(11)
+    
+    for index, gamma in enumerate(gamma_array):
+        print(callfunc(gamma = gamma, N = 400, M = 400))
+        V_array[index] = callfunc(gamma = gamma, N = 400, M = 400)
+        
+    plt.plot(gamma_array, V_array, 'bo', label = 'Values')
+    plt.xlabel('gamma')
+    plt.ylabel('value')
+    plt.title('Values for different gammas')
+    plt.legend()
+    plt.savefig('Values for different gammas.jpg')
     plt.show()
 
 def main():
