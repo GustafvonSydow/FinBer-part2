@@ -9,7 +9,7 @@ t: k = 0, 1, 2, ... , M
 def payoff_function(S, K):
     return [max(value - K, 0) for value in S]
 
-def callfunc(K = 15, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 1000, M = 100):
+def callfunc(K = 15, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 1000, M = 1000):
     s_max = 4*K
     delta_t = T/M
     delta_s = s_max/N
@@ -70,24 +70,47 @@ def bsexact(sigma: float, R: float, K: float, T: float, s: float):
 def delta_t_test():
     s = 15
     F = bsexact(sigma = 0.25, R = 0.1, K = 15, T = 0.5, s = s)
-    M_array = [1*(2**exp) for exp in range(10)]
+    M_array = [(2**exp) for exp in range(10)]
     delta_t_array = [0.5/M for M in M_array]
-    V_array = np.zeros(len(M_array))
+    E_array = np.zeros(len(M_array))
     
     for index, M in enumerate(M_array):
         print(np.abs(callfunc(M = M) - F))
-        V_array[index] = np.abs(callfunc(M = M) - F)
+        E_array[index] = np.abs(callfunc(M = M) - F)
         
-    # line_array = [0.00056 + 1.079 + 0.025*x for x in delta_t_array]
-    plt.loglog(delta_t_array, V_array, 'bo', label = '')
+    expected_errors_array = [delta_t for delta_t in delta_t_array]
+    plt.loglog(delta_t_array, E_array, 'bo', label = 'Estimated errors')
+    plt.loglog(delta_t_array, expected_errors_array, 'ro', label = 'Expected errors')
     plt.xlabel('delta t')
     plt.ylabel('error')
     plt.title('Error convergence for delta t')
-    # plt.plot(delta_t_array, line_array, 'ro')
+    plt.savefig('Error convergence for delta t.jpg')
+    plt.legend()
+    plt.show()
+    
+def delta_s_test():
+    s = 15
+    F = bsexact(sigma = 0.25, R = 0.1, K = 15, T = 0.5, s = s)
+    N_array = [8*(2**exp) for exp in range(7)]
+    delta_t_array = [60/N for N in N_array]
+    E_array = np.zeros(len(N_array))
+    
+    for index, N in enumerate(N_array):
+        print(np.abs(callfunc(N = N) - F))
+        E_array[index] = np.abs(callfunc(N = N) - F)
+        
+    expected_errors_array = [delta_t**2 for delta_t in delta_t_array]
+    plt.loglog(delta_t_array, E_array, 'bo', label = 'Estimated errors')
+    plt.loglog(delta_t_array, expected_errors_array, 'ro', label = 'Expected errors')
+    plt.xlabel('delta s')
+    plt.ylabel('error')
+    plt.title('Error convergence for delta s')
+    plt.savefig('Error convergence for delta s.jpg')
+    plt.legend()
     plt.show()
 
 def main():
-    delta_t_test()
+    delta_s_test()
 
 if __name__ == "__main__":
     main()
