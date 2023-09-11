@@ -6,14 +6,10 @@ S: j = 0, 1, 2, ... , N
 t: k = 0, 1, 2, ... , M
 '''
 
-'''
-titta på indexering
-'''
-
 def payoff_function(S, K):
     return [max(value - K, 0) for value in S]
 
-def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 1000, M = 1000):
+def callfunc(K = 15, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 1000, M = 100):
     s_max = 4*K
     delta_t = T/M
     delta_s = s_max/N
@@ -32,19 +28,19 @@ def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 1000, M = 1000):
         
         #diagonal
         for j in range(1, N):
-            alpha = ((sigma**2)*(S[j]**2)*delta_t)/(2*(delta_s**2))
+            alpha = ((sigma**2)*(S[j]**(2*gamma))*delta_t)/(2*(delta_s**2))
             beta = r*S[j]*delta_t/(2*delta_s)
             d = 1 + r*delta_t + 2*alpha
             A[j-1, j-1] = d
         #lowerdiagonal
         for j in range(2, N):
-            alpha = ((sigma**2)*(S[j]**2)*delta_t)/(2*(delta_s**2))
+            alpha = ((sigma**2)*(S[j]**(2*gamma))*delta_t)/(2*(delta_s**2))
             beta = r*S[j]*delta_t/(2*delta_s)
             l = - alpha + beta
             A[j-1, j-2] = l
         #upperdiagonal
         for j in range(1, N - 1):
-            alpha = ((sigma**2)*(S[j]**2)*delta_t)/(2*(delta_s**2))
+            alpha = ((sigma**2)*(S[j]**(2*gamma))*delta_t)/(2*(delta_s**2))
             beta = r*S[j]*delta_t/(2*delta_s)
             u = - alpha - beta  
             A[j-1, j] = u
@@ -59,8 +55,7 @@ def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, N = 1000, M = 1000):
         
         next_grid_part = np.linalg.solve(A, rhs)
         grid[k + 1, 1:-1] = next_grid_part
-    print(grid)
-        
+    #hard coded    
     return grid[-1, N//4]
 
 def bsexact(sigma: float, R: float, K: float, T: float, s: float):
@@ -72,10 +67,27 @@ def bsexact(sigma: float, R: float, K: float, T: float, s: float):
     F = 0.5*s*(1+erf(d1/sqrt(2)))-exp(-R*T)*K*0.5*(1+erf(d2/sqrt(2)))
     return F
 
+def delta_t_test():
+    s = 15
+    F = bsexact(sigma = 0.25, R = 0.1, K = 15, T = 0.5, s = s)
+    M_array = [1*(2**exp) for exp in range(10)]
+    delta_t_array = [0.5/M for M in M_array]
+    V_array = np.zeros(len(M_array))
+    
+    for index, M in enumerate(M_array):
+        print(np.abs(callfunc(M = M) - F))
+        V_array[index] = np.abs(callfunc(M = M) - F)
+        
+    # line_array = [0.00056 + 1.079 + 0.025*x for x in delta_t_array]
+    plt.loglog(delta_t_array, V_array, 'bo', label = '')
+    plt.xlabel('delta t')
+    plt.ylabel('error')
+    plt.title('Error convergence for delta t')
+    # plt.plot(delta_t_array, line_array, 'ro')
+    plt.show()
+
 def main():
-    grid = callfunc(K = 15)
-    print(grid)
-    print(bsexact(sigma = 0.25, R = 0.1, K = 15, T = 0.5, s = 15))
+    delta_t_test()
 
 if __name__ == "__main__":
     main()

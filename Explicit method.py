@@ -1,10 +1,11 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def payoff_function(S, K):
     return [max(value - K, 0) for value in S]
 
 
-def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, M = 100, N = 10000):
+def callfunc(K = 15, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, M = 200, N = 20000):
     s_max = 4*K
     delta_s = s_max/M
     delta_t = T/N
@@ -18,8 +19,9 @@ def callfunc(K, r = 0.1, sigma = 0.25, T = 0.5, gamma = 1, M = 100, N = 10000):
         
         for j in range(1, M):
             V[j] = V[j] + r * S[j]*(delta_t/(2*delta_s))*(V[j + 1] - V[j - 1]) + ((sigma**2)/2)*(S[j]**(2*gamma))*(delta_t/(delta_s**2))*(V[j + 1] - 2*V[j] + V[j - 1]) - delta_t*r*V[j]
-            
-    return V
+    
+    #hard coded for K = S = 15        
+    return V[M//4]
 
 
 def bsexact(sigma: float, R: float, K: float, T: float, s: float):
@@ -32,12 +34,8 @@ def bsexact(sigma: float, R: float, K: float, T: float, s: float):
     return F
 
 
-def main(K = 15):
-    s = 15
-    V = callfunc(K = K)
-    F = bsexact(sigma = 0.25, R = 0.1, K = K, T = 0.5, s = s)
-    print(V[(s*(len(V)))//(4*K)])
-    print(F)
+def main():
+    callfunc()
     
 if __name__ == "__main__":
     main()
